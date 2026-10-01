@@ -132,7 +132,7 @@ CC 5.1kΩ 개별 저항, SRV05 ESD(VBUS·D±), USB-C 실드는 페라이트(BLM2
 ---
 
 ## 5. QMK 작업 이력 (완료)
-1. ✅ `keyboard.json`: 핀, 매트릭스, 다이오드, USB VID/PID(임시 `0xFEED/0x4A64`), 부트로더, rgblight(12개, 최대 밝기 120), layouts
+1. ✅ `keyboard.json`: 핀, 매트릭스, 다이오드, USB VID/PID(`0x4A6B/0x4A64`. 처음엔 `0xFEED`였으나 VIA가 0xFEED를 거부해서 2026-10-01 변경), 부트로더, rgblight(12개, 최대 밝기 120), layouts
 2. ✅ `LAYOUT_aek64` (처음에는 `LAYOUT_60_ansi_7u`로 만들었다가 6.5U로 고치면서 이름 변경). S70 = row4/col13 주의
 3. ✅ `keymaps/default`, `keymaps/via` (두 키맵 내용 동일, `via`는 `VIA_ENABLE = yes`)
 4. ✅ WS2812 PWM (A6 / TIM3_CH1 / DMA1 ch3), `halconf.h`, `mcuconf.h`, `config.h`
@@ -183,7 +183,14 @@ qmk flash -kb jayking64 -km via        # 빌드 + 굽기. 먼저 SW1을 1초 정
 - 처음 굽기는 USB만으로 된다 (F072 ROM DFU, SW1 버튼). SWD 디버거는 필요 없다.
 - Windows에서 DFU 장치를 못 찾으면 QMK Toolbox의 Tools → Install Drivers를 실행한다.
 
-### ⏭ 실보드 테스트 체크리스트 (아직 안 함)
+### 실보드 테스트 진행 상황 (2026-10-01 집 PC)
+- ✅ ROM DFU 굽기 (SW1), USB 인식 → CRS/클럭 정상
+- ✅ 납땜된 키 전부 정상 → **`COL2ROW` 다이오드 방향 확정**
+- ✅ LED 켜짐, 모드 변경 확인 (12개 전부/색 순서/전류는 아직)
+- ⚠️ 테스트 중 기존 키보드와 "충돌"로 PC 재부팅 1회 (증상 미확인, 재현 안 됨)
+- ⏳ 남은 다이오드·스위치 납땜 후: 나머지 키, Fn+\ 부트로더 반복, 한/영·한자
+
+### ⏭ 실보드 테스트 체크리스트
 | 항목 | 방법 | 실패하면 |
 |---|---|---|
 | USB 인식 | 굽고 나서 키보드로 잡히는지 | `jayking64.c`의 CRS 코드, 클럭 설정 의심 |

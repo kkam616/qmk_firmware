@@ -5,7 +5,7 @@
     "processor": "STM32F072",
     "bootloader": "stm32-dfu",
     "usb": {
-        "vid": "0xFEED",
+        "vid": "0x4A6B",
         "pid": "0x4A64",
         "device_version": "1.0.0"
     },
