@@ -131,11 +131,77 @@ CC 5.1kΩ 개별 저항, SRV05 ESD(VBUS·D±), USB-C 실드는 페라이트(BLM2
 
 ---
 
-## 5. 다음 작업 (QMK)
-1. `keyboards/jayking64/` 생성: `keyboard.json`(핀, 매트릭스, 다이오드, USB VID/PID, 부트로더, rgblight, layouts)
-2. `LAYOUT_aek64` 매크로 작성 (처음에는 `LAYOUT_60_ansi_7u`로 만들었다가 이름 변경): 위 3번 매트릭스 배치와 `matrix_map.csv` 기준, S70 위치 주의
-3. `keymaps/default/keymap.c`: Apple 스타일(Option = Alt, Command = GUI) + Fn 레이어
-4. WS2812 PWM 드라이버 설정(A6 / TIM3_CH1 / DMA), `halconf.h` / `mcuconf.h`
-5. 빌드 → `stm32-dfu`로 플래시 → 실보드 테스트(매트릭스 전체, 소프트 리셋·부트로더 진입, LED 전류)
+## 5. QMK 작업 이력 (완료)
+1. ✅ `keyboard.json`: 핀, 매트릭스, 다이오드, USB VID/PID(임시 `0xFEED/0x4A64`), 부트로더, rgblight(12개, 최대 밝기 120), layouts
+2. ✅ `LAYOUT_aek64` (처음에는 `LAYOUT_60_ansi_7u`로 만들었다가 6.5U로 고치면서 이름 변경). S70 = row4/col13 주의
+3. ✅ `keymaps/default`, `keymaps/via` (두 키맵 내용 동일, `via`는 `VIA_ENABLE = yes`)
+4. ✅ WS2812 PWM (A6 / TIM3_CH1 / DMA1 ch3), `halconf.h`, `mcuconf.h`, `config.h`
+5. ✅ `jayking64.c`: 크리스털이 없어서 HSI48을 USB SOF로 자동 보정하는 **CRS를 켬** (QMK 기본값은 CRS를 안 켬)
+6. ✅ `jayking64_via.json`: VIA 정의 파일 (60키, 6.5U, LED 메뉴)
+7. ✅ `hardware/`: 넷리스트 2개, 회로도 PDF, BOM. **넷리스트로 핀/매트릭스가 펌웨어와 100% 일치함을 확인함**
 
-> 하드웨어 수치를 바꾸거나 추정할 때는 이 문서와 CSV를 기준으로 하고, 모호한 점은 사용자에게 확인한다.
+> 하드웨어 수치를 바꾸거나 추정할 때는 이 문서와 CSV/넷리스트를 기준으로 하고, 모호한 점은 사용자에게 확인한다.
+
+---
+
+## 6. 현재 상태와 다음 할 일 (2026-10-01 회사 PC 세션에서 정리)
+
+### 사용자에 대해 (새 대화에서 Claude가 알아야 할 것)
+- **하드웨어 개발자**(Altium, STM32 보드 설계). **펌웨어, git, VS Code는 처음**이다. 한국어로, 하드웨어 비유를 써서 쉽게 설명한다.
+- 배우는 게 목적일 때는 **한 단계씩 설명하고 직접 해보게** 한다. "그냥 해줘"라고 하면 직접 처리한다.
+- GitHub: `kkam616`. 커밋 작성자는 `Jay <83931616+kkam616@users.noreply.github.com>` (실제 이메일이 공개되지 않게 noreply 사용).
+- **기본 사용 OS는 Windows**다 (키캡만 Apple 스타일, Mac은 안 씀).
+
+### git
+- 브랜치 `jayking64`. `origin` = 사용자 포크 `github.com/kkam616/qmk_firmware` (공개), `upstream` = `qmk/qmk_firmware`.
+- QMK `.gitignore`가 `*.zip`, `*.png`, `*.pdf`, `keymaps/via/`를 제외한다. 이 키보드의 해당 파일들은 `git add -f`로 강제 추가했다. 새로 추가할 때도 `-f`가 필요하다.
+
+### 현재 키맵 (Windows 기준, default와 via 동일)
+```
+기본 레이어 아랫줄:
+ 키캡: Control | Option | Command | Space | Command | Option | Control
+ 기능: Ctrl    | Win    | Alt     | Space | 한/영   | Fn     | 한자
+                                            KC_LNG1   MO(_FN)  KC_LNG2
+- 왼쪽 위 키 = QK_GESC (Esc, Shift/Win과 같이 누르면 `)
+- Delete 키 = Backspace
+
+Fn 레이어 (Fn이 오른손이라 이동 키는 왼손에 모음):
+ Esc키=`  숫자줄=F1~F12  Backspace=Del
+ Q Home  W ↑  E End  R PgUp
+ A ←     S ↓  D →    F PgDn
+ P = Print Screen,  \ = 부트로더(QK_BOOT)
+ M 음소거  , 볼륨-  . 볼륨+  / 재생·일시정지
+ Z~N = 언더글로 LED (켜기/끄기, 모드, 색상, 채도, 밝기+, 밝기-)
+```
+- 리셋 키(QK_RBT)는 사용자 요청으로 뺐다 (USB를 다시 꽂으면 됨).
+
+### 빌드와 굽기 (QMK MSYS)
+```
+qmk compile -j 0 -kb jayking64 -km via
+qmk flash -kb jayking64 -km via        # 빌드 + 굽기. 먼저 SW1을 1초 정도 꾹 눌러 DFU 진입
+```
+- 처음 굽기는 USB만으로 된다 (F072 ROM DFU, SW1 버튼). SWD 디버거는 필요 없다.
+- Windows에서 DFU 장치를 못 찾으면 QMK Toolbox의 Tools → Install Drivers를 실행한다.
+
+### ⏭ 실보드 테스트 체크리스트 (아직 안 함)
+| 항목 | 방법 | 실패하면 |
+|---|---|---|
+| USB 인식 | 굽고 나서 키보드로 잡히는지 | `jayking64.c`의 CRS 코드, 클럭 설정 의심 |
+| 키 60개 | VIA Key Tester 탭 | **키가 전부 안 되면** 다이오드 방향 의심: `keyboard.json`의 `diode_direction`을 `ROW2COL`로 바꿔본다 (넷리스트로는 다이오드 1번 핀이 애노드인지 확인 불가) |
+| 한/영, 한자 | 메모장에서 오른쪽 Command / 오른쪽 Control | Windows 한국어 입력기와 키보드 드라이버 설정 확인 |
+| **부트로더 진입** | 펌웨어를 구운 뒤 **Fn+\\** → 장치 관리자에 "STM32 BOOTLOADER". **5~10번 반복** | 안 되거나 가끔만 되면 **C9(470nF)가 소프트웨어 리셋을 방해**하는 것. 다음 리비전에서 100nF로 바꾸고 MCU 가까이 둔다 |
+| LED | Fn+Z로 켜기. 12개 다 켜지는지, 색 순서(빨강 고르면 빨강인지) | 색이 바뀌어 나오면 색 순서(RGB/GRB) 설정 |
+| LED 전류 | 흰색 최대 밝기에서 USB 전류 측정 | `rgblight.max_brightness`(지금 120)를 조정 |
+
+### ⏭ 다음 작업 후보
+1. **멀티 레이아웃 VIA 옵션**: `keyboard.json`에 `LAYOUT_all`(66키) 추가, 대체 스위치 6개(S14, S41, S44, S55, S64, S69)에 기본 키 넣기, VIA JSON에 레이아웃 옵션 메뉴(분할 백스페이스 / ANSI·ISO·BAE 엔터 / 왼쪽 Shift / 오른쪽 Shift / 아랫줄 4종). 3번 표 참고.
+   - 미확정: ISO·BAE 엔터는 S42 자리를 "쓰는 것 같다"고 함 (아트웍으로 재확인 권장). 왼쪽 Shift 1U+1.25U 조합은 미정.
+2. **Caps Lock 표시**: Caps Lock 상태 LED가 없어서, 켜지면 언더글로 색이 바뀌게 (rgblight layers). 실보드에서 LED 확인 후.
+3. VIA로 며칠 써보고 마음에 드는 배치를 `keymap.c`에 반영.
+
+### VS Code 세팅 (회사 PC는 완료, 집 PC는 다시 해야 함)
+- 확장: **clangd** 사용, Microsoft C/C++의 IntelliSense는 끔 (`"C_Cpp.intelliSenseEngine": "disabled"`).
+- **Windows에서 clangd 빨간 밑줄 해결**: QMK 루트의 `.clangd`가 `Compiler: clang`이라 Windows에서 x86용 코드로 해석해서 ChibiOS "Unknown compiler" 에러가 난다. `keyboards/jayking64/.clangd`(커밋됨)에 `--target=thumbv6m-none-eabi`를 넣어 해결했다. 추가로 빌드 정보 파일이 필요하다:
+  `qmk compile --compiledb -j 0 -kb jayking64 -km via` (새 .c 파일 추가나 큰 설정 변경 때만 다시 실행)
+- 사용자 설정: QMK MSYS 터미널 프로필 (`C:\QMK_MSYS\usr\bin\bash.exe --login`, `MSYSTEM=MINGW64`, `CHERE_INVOKING=1`), `files.watcherExclude`와 `search.exclude`에 `.build`, `lib`.
+- `.vscode/tasks.json` (git 제외 파일): Ctrl+Shift+B = `qmk compile -j 0 -kb jayking64 -km via`, `problemMatcher: $gcc`.
