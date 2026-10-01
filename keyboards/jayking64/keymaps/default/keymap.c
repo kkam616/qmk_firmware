@@ -38,17 +38,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     /* Fn 레이어 (오른쪽 Option 자리의 Fn을 누른 채로)
      * - Esc 키: `, 숫자줄: F1~F12, Delete 자리 = 앞으로 지우기(Del)
-     * - W/A/S/D: 방향키 ↑ ← ↓ →
-     * - U/O: Home/End, P/;: PgUp/PgDn
-     * - M / , / .: 음소거 / 볼륨 Down / 볼륨 Up
+     * - 왼손 내비게이션 (Fn은 오른손이라 손이 꼬이지 않게 왼쪽에 모음)
+     *     Q Home   W ↑    E End    R PgUp
+     *     A ←      S ↓    D →      F PgDn
+     * - P: Print Screen
+     * - M / , / . / /: 음소거 / 볼륨 Down / 볼륨 Up / 재생·일시정지
      * - Z~N: 언더글로 LED (켜기/끄기, 모드, 색상, 채도, 밝기+/-)
-     * - R: 소프트 리셋(QK_RBT), \: 부트로더(DFU) 진입(QK_BOOT)  ← 실보드 리셋 회로 테스트용
+     * - \: 부트로더(DFU) 진입(QK_BOOT)  ← 소프트웨어 리셋을 거치므로 NRST(C9) 회로 테스트도 이걸로 함
      */
     [_FN] = LAYOUT_aek64(
         KC_GRV,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  KC_DEL,
-        _______, _______, KC_UP,   _______, QK_RBT,  _______, _______, KC_HOME, _______, KC_END,  KC_PGUP, _______, _______, QK_BOOT,
-        _______, KC_LEFT, KC_DOWN, KC_RGHT, _______, _______, _______, _______, _______, _______, KC_PGDN, _______,          _______,
-        _______,          UG_TOGG, UG_NEXT, UG_HUEU, UG_SATU, UG_VALU, UG_VALD, KC_MUTE, KC_VOLD, KC_VOLU, _______,          _______,
+        _______, KC_HOME, KC_UP,   KC_END,  KC_PGUP, _______, _______, _______, _______, _______, KC_PSCR, _______, _______, QK_BOOT,
+        _______, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, _______, _______, _______, _______, _______, _______,          _______,
+        _______,          UG_TOGG, UG_NEXT, UG_HUEU, UG_SATU, UG_VALU, UG_VALD, KC_MUTE, KC_VOLD, KC_VOLU, KC_MPLY,          _______,
         _______, _______, _______,                            _______,                            _______, _______, _______
     ),
 };
