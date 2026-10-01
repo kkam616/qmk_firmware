@@ -162,6 +162,9 @@ CC 5.1kΩ 개별 저항, SRV05 ESD(VBUS·D±), USB-C 실드는 페라이트(BLM2
  키캡: Control | Option | Command | Space | Command | Option | Control
  기능: Ctrl    | Win    | Alt     | Space | 한/영   | Fn     | 한자
                                             KC_LNG1   MO(_FN)  KC_LNG2
+ (2026-10-01 KC_RALT/KC_RCTL로 바꿔봤으나 되돌림: Windows의 "종류 1(오른Alt=한/영)" 설정은
+  PS/2 키보드에만 적용되고 USB 키보드는 103/106키로 취급해서 오른Alt가 그냥 Alt로 동작함.
+  LNG1/LNG2는 요즘 한국 USB 키보드와 같은 전용 코드라 설정 없이 동작. 둘 다 원하면 탭/홀드(RALT_T(KC_LNG1)) 가능)
 - 왼쪽 위 키 = QK_GESC (Esc, Shift/Win과 같이 누르면 `)
 - Delete 키 = Backspace
 
@@ -188,7 +191,10 @@ qmk flash -kb jayking64 -km via        # 빌드 + 굽기. 먼저 SW1을 1초 정
 - ✅ 납땜된 키 전부 정상 → **`COL2ROW` 다이오드 방향 확정**
 - ✅ LED 켜짐, 모드 변경 확인 (12개 전부/색 순서/전류는 아직)
 - ⚠️ 테스트 중 기존 키보드와 "충돌"로 PC 재부팅 1회 (증상 미확인, 재현 안 됨)
-- ⏳ 남은 다이오드·스위치 납땜 후: 나머지 키, Fn+\ 부트로더 반복, 한/영·한자
+- ✅ 다이오드 전부 실장, 한자 키(S68/D64) 정상 (한글 한 글자 입력 후 눌러야 후보 창이 뜸)
+- ✅ **Fn+\ 부트로더 진입 반복 테스트 통과** → C9(470nF)가 소프트웨어 리셋을 막지 않음. 100nF 변경은 권장 사항으로만 유지
+- ℹ️ QK_BOOT로 들어간 뒤 `qmk flash` 하면 끝나고도 DFU에 머무름 (ROM DFU의 leave가 안 먹음). **USB를 다시 꽂으면** 새 펌웨어로 정상 부팅
+- ⏳ 남은 것: VIA로 60키 전체 확인, LED 12개/색 순서/전류
 
 ### ⏭ 실보드 테스트 체크리스트
 | 항목 | 방법 | 실패하면 |
