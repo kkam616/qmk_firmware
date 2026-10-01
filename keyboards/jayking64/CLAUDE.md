@@ -60,17 +60,35 @@ rgblight: 언더글로 12개, RGBLIGHT_LIMIT_VAL로 밝기 제한 필수 (아래
 
 ---
 
-## 3. 기본 배열 (사용자 지정 기준 배열)
+## 3. 기본 배열: AEK64 (사용자 지정 기준 배열)
 
-**60% ANSI, 7U 스페이스, Apple 스타일 아랫줄, 60키** (사용자가 사진으로 지정)
+**AEK64 = Apple Extended Keyboard(AEK)에서 키캡과 ALPS 스위치를 옮겨 심는 배열.**
+60% ANSI, **6.5U 스페이스**, Apple 스타일 아랫줄, 60키. 키캡은 Apple 스타일이지만 **기본 사용 OS는 Windows**.
+QMK 배열 이름: `LAYOUT_aek64`
+
+> 2026-10-01 수정: 처음 인수인계 때 "Space 7U / Option 1U"로 잘못 적혀 있었다. 사용자 확인 결과 기본은 6.5U / 1.25U다.
+> 7U와 6.5U는 같은 스위치(S57, S58, S60, S62, S65, S67, S68)를 쓰므로 매트릭스는 같다.
 
 ```
 행 0: ~ 1 2 3 4 5 6 7 8 9 0 - =  Delete(2U)
 행 1: Tab(1.5) Q W E R T Y U I O P [ ]  \(1.5)
 행 2: Caps(1.75) A S D F G H J K L ; '  Return(2.25)
 행 3: Shift(2.25) Z X C V B N M , . /  Shift(2.75)
-행 4: Control(1.5) Option(1) Command(1.5) Space(7) Command(1.5) Option(1) Control(1.5)
+행 4: Control(1.5) Option(1.25) Command(1.5) Space(6.5) Command(1.5) Option(1.25) Control(1.5)
 ```
+
+### 대체 배열 (PCB 멀티 레이아웃, 사용자 확인 2026-10-01)
+| 영역 | 대체 배열 | 스위치 (행,열) |
+|---|---|---|
+| 백스페이스 | 1U + 1U 분할 | S14 (0,13) + S70 (4,13, 다른 홀 사용) |
+| 엔터 | ISO 엔터 + `#` / Big-Ass Enter | 엔터는 S42 (2,13), `#`은 S41 (2,12) |
+| Caps Lock | Stepped Caps | S29 그대로 (키캡만 다름) |
+| 왼쪽 Shift | ISO 1.25U + 1U `\` | S43 (3,0) + S44 (3,1). 1U + 1.25U 조합은 미정 |
+| 오른쪽 Shift | 1.75U + 1U / 1U + 1.75U | S56 (3,13) + S69 (4,12) / S55 (3,12) + S56 (3,13) |
+| 아랫줄 | 7U / 6.5U (키 7개), 6.25U / 6U (키 8개) | 8개짜리는 S64 (4,7) 추가 |
+
+넷리스트(`hardware/*.NET`)로 확인: 대체 스위치끼리는 **전기적으로 독립**(각자 다이오드, 다른 행/열 교차점)이다.
+"둘 중 하나만 실장"은 **풋프린트가 물리적으로 겹치는 제약**이다.
 
 ### 매트릭스 배치 (이 배열에서 쓰는 60개)
 ```
@@ -115,7 +133,7 @@ CC 5.1kΩ 개별 저항, SRV05 ESD(VBUS·D±), USB-C 실드는 페라이트(BLM2
 
 ## 5. 다음 작업 (QMK)
 1. `keyboards/jayking64/` 생성: `keyboard.json`(핀, 매트릭스, 다이오드, USB VID/PID, 부트로더, rgblight, layouts)
-2. `LAYOUT_60_ansi_7u` 매크로 작성: 위 3번 매트릭스 배치와 `matrix_map.csv` 기준, S70 위치 주의
+2. `LAYOUT_aek64` 매크로 작성 (처음에는 `LAYOUT_60_ansi_7u`로 만들었다가 이름 변경): 위 3번 매트릭스 배치와 `matrix_map.csv` 기준, S70 위치 주의
 3. `keymaps/default/keymap.c`: Apple 스타일(Option = Alt, Command = GUI) + Fn 레이어
 4. WS2812 PWM 드라이버 설정(A6 / TIM3_CH1 / DMA), `halconf.h` / `mcuconf.h`
 5. 빌드 → `stm32-dfu`로 플래시 → 실보드 테스트(매트릭스 전체, 소프트 리셋·부트로더 진입, LED 전류)
