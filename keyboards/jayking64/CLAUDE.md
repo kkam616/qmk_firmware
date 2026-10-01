@@ -132,7 +132,7 @@ CC 5.1kΩ 개별 저항, SRV05 ESD(VBUS·D±), USB-C 실드는 페라이트(BLM2
 ---
 
 ## 5. QMK 작업 이력 (완료)
-1. ✅ `keyboard.json`: 핀, 매트릭스, 다이오드, USB VID/PID(`0x4A6B/0x4A64`. 처음엔 `0xFEED`였으나 VIA가 0xFEED를 거부해서 2026-10-01 변경), 부트로더, rgblight(12개, 최대 밝기 120), layouts
+1. ✅ `keyboard.json`: 핀, 매트릭스, 다이오드, USB VID/PID(`0x4A6B/0x4A64`. 처음엔 `0xFEED`였으나 VIA가 0xFEED를 거부해서 2026-10-01 변경), 부트로더, rgblight(12개, 최대 밝기 180. 처음 120), layouts
 2. ✅ `LAYOUT_aek64` (처음에는 `LAYOUT_60_ansi_7u`로 만들었다가 6.5U로 고치면서 이름 변경). S70 = row4/col13 주의
 3. ✅ `keymaps/default`, `keymaps/via` (두 키맵 내용 동일, `via`는 `VIA_ENABLE = yes`)
 4. ✅ WS2812 PWM (A6 / TIM3_CH1 / DMA1 ch3), `halconf.h`, `mcuconf.h`, `config.h`
@@ -194,7 +194,8 @@ qmk flash -kb jayking64 -km via        # 빌드 + 굽기. 먼저 SW1을 1초 정
 - ✅ 다이오드 전부 실장, 한자 키(S68/D64) 정상 (한글 한 글자 입력 후 눌러야 후보 창이 뜸)
 - ✅ **Fn+\ 부트로더 진입 반복 테스트 통과** → C9(470nF)가 소프트웨어 리셋을 막지 않음. 100nF 변경은 권장 사항으로만 유지
 - ℹ️ QK_BOOT로 들어간 뒤 `qmk flash` 하면 끝나고도 DFU에 머무름 (ROM DFU의 leave가 안 먹음). **USB를 다시 꽂으면** 새 펌웨어로 정상 부팅
-- ✅ LED 12개 모두 켜짐, 색 순서 정상, 전류 괜찮음 (max_brightness 120 유지)
+- ✅ LED 12개 모두 켜짐, 색 순서 정상, 전류 괜찮음 (120에서 확인 후 **max_brightness 180으로 올림**, 밝기·동작 이상 없음)
+  - 데이터시트 기준 흰색 최대 예상: LED 칩당 12mA 버전 약 340mA / 16mA 버전 약 440mA (F1 유지 0.5A 이하). 255는 16mA 버전이면 약 620mA라 비추천
 - ✅ VIA Key Tester로 60키 전부 정상 → **실보드 테스트 체크리스트 전 항목 완료**
 
 ### ⏭ 실보드 테스트 체크리스트
@@ -205,7 +206,7 @@ qmk flash -kb jayking64 -km via        # 빌드 + 굽기. 먼저 SW1을 1초 정
 | 한/영, 한자 | 메모장에서 오른쪽 Command / 오른쪽 Control | Windows 한국어 입력기와 키보드 드라이버 설정 확인 |
 | **부트로더 진입** | 펌웨어를 구운 뒤 **Fn+\\** → 장치 관리자에 "STM32 BOOTLOADER". **5~10번 반복** | 안 되거나 가끔만 되면 **C9(470nF)가 소프트웨어 리셋을 방해**하는 것. 다음 리비전에서 100nF로 바꾸고 MCU 가까이 둔다 |
 | LED | Fn+Z로 켜기. 12개 다 켜지는지, 색 순서(빨강 고르면 빨강인지) | 색이 바뀌어 나오면 색 순서(RGB/GRB) 설정 |
-| LED 전류 | 흰색 최대 밝기에서 USB 전류 측정 | `rgblight.max_brightness`(지금 120)를 조정 |
+| LED 전류 | 흰색 최대 밝기에서 USB 전류 측정 | `rgblight.max_brightness`(지금 180)를 조정 |
 
 ### ⏭ 다음 작업 후보
 1. **멀티 레이아웃 VIA 옵션**: `keyboard.json`에 `LAYOUT_all`(66키) 추가, 대체 스위치 6개(S14, S41, S44, S55, S64, S69)에 기본 키 넣기, VIA JSON에 레이아웃 옵션 메뉴(분할 백스페이스 / ANSI·ISO·BAE 엔터 / 왼쪽 Shift / 오른쪽 Shift / 아랫줄 4종). 3번 표 참고.
