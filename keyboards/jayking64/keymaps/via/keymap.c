@@ -48,7 +48,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * - Caps Lock: Fn 고정(QK_LLCK). Fn+Caps로 고정, 고정 중에는 Caps나 Fn을 누르면 풀림
      * - M / , / . / /: 음소거 / 볼륨 Down / 볼륨 Up / 재생·일시정지
      * - Z / X / C / B / N: 언더글로 LED (켜기/끄기, 모드, 색상, 밝기+, 밝기-)  ※ 채도 키는 뺌
-     * - \: 부트로더(DFU) 진입(QK_BOOT)  ← 소프트웨어 리셋을 거치므로 NRST(C9) 회로 테스트도 이걸로 함
+     * - \: 3초 누르면 빨간색 5번 깜빡인 뒤 부트로더(DFU) 진입  ← 소프트웨어 리셋을 거치므로 NRST(C9) 회로 테스트도 이걸로 함
      */
     [_FN] = LAYOUT_aek64(
         KC_GRV,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  KC_DEL,
@@ -66,7 +66,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *    밝기 221 = 흰색 전체 점등 시 약 320mA (2026-10-13 측정). 일반 조명 최대는 231(약 360mA).
  * 1: Fn 고정 알림(흰색 깜빡임) - Caps Lock이 꺼져 있을 때 사용
  * 2: Fn 고정 알림(꺼짐 깜빡임) - Caps Lock이 켜져 있어서 이미 흰색일 때 반대로 깜빡임
- * 3: 부트로더 대기(빨간색) - Fn+ 를 누르고 있는 동안. 번호가 클수록 위에 그려지므로 가장 위
+ * 3: 부트로더 대기(빨간색) - Fn+\ 를 누르고 있는 동안, 3초 후에는 5번 깜빡임. 번호가 클수록 위에 그려지므로 가장 위
+ *    (깜빡임 동안에는 2번 off_layer를 켜서 꺼짐 구간을 검게 만든다)
  */
 enum rgb_layer_index {
     RGBL_CAPS_LOCK,
@@ -102,24 +103,61 @@ bool layer_lock_set_user(layer_state_t locked_layers) {
 
 /* Fn+\ 길게 누르기 → 부트로더
  * Fn+Delete(앞으로 지우기)를 누르다가 바로 아래 \ 가 스쳐서 부트로더로 들어가는 실수를 막는다.
+ * 1. 누르고 있는 동안 빨간색. 3초 전에 떼면 취소
+ * 2. 3초가 되면 잠깐 끄고(BLINK_MS), Fn 고정과 같은 박자로 빨간색 5번 깜빡임
+ *    깜빡임의 꺼짐 구간은 off_layer로 검게 만들어서, 원래 조명이나 Caps Lock 흰색이 비치지 않게 한다.
+ *    이 단계부터는 키를 떼도 취소되지 않는다.
+ * 3. 깜빡임이 끝나면 부트로더 진입
  */
 #define BOOT_HOLD_MS 3000
 
-static bool     boot_hold_active = false;
-static uint16_t boot_hold_timer;
+enum boot_hold_state {
+    BOOT_IDLE,
+    BOOT_HOLDING,  // 누르는 중 (빨간색)
+    BOOT_GAP,      // 3초 경과, 깜빡임 전 잠깐 꺼짐
+    BOOT_BLINKING, // 빨간색 깜빡이는 중
+};
+
+static uint8_t  boot_state = BOOT_IDLE;
+static uint16_t boot_timer;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     if (keycode == BOOT_HOLD) {
-        boot_hold_active = record->event.pressed;
-        boot_hold_timer  = timer_read();
-        rgblight_set_layer_state(RGBL_BOOT_HOLD, boot_hold_active);
+        if (record->event.pressed && boot_state == BOOT_IDLE) {
+            boot_state = BOOT_HOLDING;
+            boot_timer = timer_read();
+            rgblight_set_layer_state(RGBL_BOOT_HOLD, true);
+        } else if (!record->event.pressed && boot_state == BOOT_HOLDING) {
+            boot_state = BOOT_IDLE;
+            rgblight_set_layer_state(RGBL_BOOT_HOLD, false);
+        }
         return false;
     }
     return true;
 }
 
 void housekeeping_task_user(void) {
-    if (boot_hold_active && timer_elapsed(boot_hold_timer) >= BOOT_HOLD_MS) {
-        reset_keyboard(); // QK_BOOT과 같은 동작: DFU 부트로더로 진입
+    switch (boot_state) {
+        case BOOT_HOLDING:
+            if (timer_elapsed(boot_timer) >= BOOT_HOLD_MS) {
+                rgblight_set_layer_state(RGBL_BLINK_OFF, true); // 빨간색 아래를 검게
+                rgblight_set_layer_state(RGBL_BOOT_HOLD, false);
+                boot_state = BOOT_GAP;
+                boot_timer = timer_read();
+            }
+            break;
+        case BOOT_GAP:
+            if (timer_elapsed(boot_timer) >= FN_LOCK_BLINK_MS) {
+                rgblight_blink_layer_repeat(RGBL_BOOT_HOLD, FN_LOCK_BLINK_MS, FN_LOCK_BLINK_TIMES);
+                boot_state = BOOT_BLINKING;
+                boot_timer = timer_read();
+            }
+            break;
+        case BOOT_BLINKING:
+            // 켜짐 + 꺼짐 = 2 * BLINK_MS 를 5번
+            if (timer_elapsed(boot_timer) >= 2 * FN_LOCK_BLINK_MS * FN_LOCK_BLINK_TIMES) {
+                reset_keyboard(); // QK_BOOT과 같은 동작: DFU 부트로더로 진입
+            }
+            break;
     }
 }

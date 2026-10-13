@@ -172,7 +172,7 @@ Fn 레이어 (Fn이 오른손이라 이동 키는 왼손에 모음):
  Esc키=`  숫자줄=F1~F12  Backspace=Del
  Q Home  W ↑  E End  R PgUp
  A ←     S ↓  D →    F PgDn
- P = Print Screen,  \ = 3초 누르면 부트로더(BOOT_HOLD = QK_KB_0, 누르는 동안 빨간색, 떼면 취소. Fn+Delete 실수 방지),  Caps = Fn 고정(QK_LLCK, Fn+Caps로 고정, Caps나 Fn으로 해제, 흰색 5번 깜빡임. Caps Lock이 켜져 있으면 꺼짐으로 깜빡임)
+ P = Print Screen,  \ = 3초 누르면 부트로더(BOOT_HOLD = QK_KB_0, 누르는 동안 빨간색, 떼면 취소. 3초 후 Fn 고정과 같은 박자로 빨간색 5번 깜빡이고(꺼짐 구간은 검게) 진입. Fn+Delete 실수 방지),  Caps = Fn 고정(QK_LLCK, Fn+Caps로 고정, Caps나 Fn으로 해제, 흰색 5번 깜빡임. Caps Lock이 켜져 있으면 꺼짐으로 깜빡임)
  M 음소거  , 볼륨-  . 볼륨+  / 재생·일시정지
  Z X C B N = 언더글로 LED (켜기/끄기, 모드, 색상, 밝기+, 밝기-). 채도 키(V)는 2026-10-13 삭제
  Caps Lock 켜짐 = 언더글로 12개 흰색(밝기 221)으로 덮어씀 (조명 꺼짐/모드와 무관, 끄면 원래대로)

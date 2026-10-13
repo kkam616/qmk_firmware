@@ -55,7 +55,7 @@ Apple Extended Keyboard(AEK)의 키캡과 ALPS 스위치를 옮겨 심어 만드
 | | `X` | 효과 모드 바꾸기 |
 | | `C` | 색상(Hue) 바꾸기 |
 | | `B` / `N` | 밝기 + / 밝기 − |
-| 펌웨어 | `\` (**3초 누르기**) | 부트로더(DFU) 진입. 누르는 동안 언더글로 **빨간색**, 3초 전에 떼면 취소 |
+| 펌웨어 | `\` (**3초 누르기**) | 부트로더(DFU) 진입. 누르는 동안 언더글로 **빨간색**, 3초 전에 떼면 취소. 3초가 되면 빨간색 **5번 깜빡인 뒤** 진입 |
 
 > **팁:** LED 키(`X`, `C`, `B`, `N`)는 **Shift를 같이 누르면 반대 방향**으로 동작합니다.
 
@@ -101,4 +101,4 @@ See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_to
 
 * **Bootmagic reset**: 왼쪽 위 키(Esc / `)를 누른 채로 USB를 꽂기 (저장된 VIA 설정이 초기화됨)
 * **Physical reset button**: PCB의 SW1(BOOT) 버튼을 1초 정도 누르기
-* **Keycode in layout**: Fn + `\`를 **3초** 누르기 (누르는 동안 빨간색)
+* **Keycode in layout**: Fn + `\`를 **3초** 누르기 (누르는 동안 빨간색, 3초 후 빨간색 5번 깜빡이고 진입)
