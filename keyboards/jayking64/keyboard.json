@@ -12,6 +12,7 @@
     "features": {
         "bootmagic": true,
         "extrakey": true,
+        "layer_lock": true,
         "mousekey": false,
         "nkro": true,
         "rgblight": true
@@ -31,7 +32,8 @@
         "sleep": true,
         "layers": {
             "enabled": true,
-            "override_rgb": true
+            "override_rgb": true,
+            "blink": true
         },
         "animations": {
             "breathing": true,

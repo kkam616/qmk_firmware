@@ -42,6 +42,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *     Q Home   W ↑    E End    R PgUp
      *     A ←      S ↓    D →      F PgDn
      * - P: Print Screen
+     * - Caps Lock: Fn 고정(QK_LLCK). Fn+Caps로 고정, 고정 중에는 Caps나 Fn을 누르면 풀림
      * - M / , / . / /: 음소거 / 볼륨 Down / 볼륨 Up / 재생·일시정지
      * - Z / X / C / B / N: 언더글로 LED (켜기/끄기, 모드, 색상, 밝기+, 밝기-)  ※ 채도 키는 뺌
      * - \: 부트로더(DFU) 진입(QK_BOOT)  ← 소프트웨어 리셋을 거치므로 NRST(C9) 회로 테스트도 이걸로 함
@@ -49,27 +50,46 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_FN] = LAYOUT_aek64(
         KC_GRV,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  KC_DEL,
         _______, KC_HOME, KC_UP,   KC_END,  KC_PGUP, _______, _______, _______, _______, _______, KC_PSCR, _______, _______, QK_BOOT,
-        _______, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, _______, _______, _______, _______, _______, _______,          _______,
+        QK_LLCK, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, _______, _______, _______, _______, _______, _______,          _______,
         _______,          UG_TOGG, UG_NEXT, UG_HUEU, _______, UG_VALU, UG_VALD, KC_MUTE, KC_VOLD, KC_VOLU, KC_MPLY,          _______,
         _______, _______, _______,                            _______,                            _______, _______, _______
     ),
 };
 
-/* Caps Lock 표시
- * - Caps Lock이 켜지면 언더글로 12개를 흰색(채도 0, 밝기 221)으로 덮어쓴다.
- * - 조명이 꺼져 있거나 어떤 효과 모드든 상관없이 표시되고(keyboard.json의 layers.override_rgb),
- *   Caps Lock을 끄면 원래 조명 상태로 돌아간다.
- * - 밝기 221 = 흰색 전체 점등 시 약 320mA (2026-10-13 측정). 일반 조명 최대는 231(약 360mA).
+/* 언더글로 표시 레이어
+ * 0: Caps Lock 표시 - Caps Lock이 켜지면 12개를 흰색(채도 0, 밝기 221)으로 덮어쓴다.
+ *    조명이 꺼져 있거나 어떤 효과 모드든 상관없이 표시되고(keyboard.json의 layers.override_rgb),
+ *    Caps Lock을 끄면 원래 조명 상태로 돌아간다.
+ *    밝기 221 = 흰색 전체 점등 시 약 320mA (2026-10-13 측정). 일반 조명 최대는 231(약 360mA).
+ * 1: Fn 고정 알림(흰색 깜빡임) - Caps Lock이 꺼져 있을 때 사용
+ * 2: Fn 고정 알림(꺼짐 깜빡임) - Caps Lock이 켜져 있어서 이미 흰색일 때 반대로 깜빡임
  */
-const rgblight_segment_t PROGMEM caps_lock_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 12, 0, 0, 221});
+enum rgb_layer_index {
+    RGBL_CAPS_LOCK,
+    RGBL_BLINK_WHITE,
+    RGBL_BLINK_OFF,
+};
 
-const rgblight_segment_t *const PROGMEM rgb_layers[] = RGBLIGHT_LAYERS_LIST(caps_lock_layer);
+const rgblight_segment_t PROGMEM white_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 12, 0, 0, 221});
+const rgblight_segment_t PROGMEM off_layer[]   = RGBLIGHT_LAYER_SEGMENTS({0, 12, 0, 0, 0});
+
+const rgblight_segment_t *const PROGMEM rgb_layers[] = RGBLIGHT_LAYERS_LIST(white_layer, white_layer, off_layer);
+
+#define FN_LOCK_BLINK_MS 100 // 깜빡임 한 번의 켜짐(또는 꺼짐) 시간
+#define FN_LOCK_BLINK_TIMES 5
 
 void keyboard_post_init_user(void) {
     rgblight_layers = rgb_layers;
 }
 
 bool led_update_user(led_t led_state) {
-    rgblight_set_layer_state(0, led_state.caps_lock);
+    rgblight_set_layer_state(RGBL_CAPS_LOCK, led_state.caps_lock);
+    return true;
+}
+
+/* Fn 고정이 켜지거나 풀릴 때마다 호출된다 */
+bool layer_lock_set_user(layer_state_t locked_layers) {
+    uint8_t blink = host_keyboard_led_state().caps_lock ? RGBL_BLINK_OFF : RGBL_BLINK_WHITE;
+    rgblight_blink_layer_repeat(blink, FN_LOCK_BLINK_MS, FN_LOCK_BLINK_TIMES);
     return true;
 }
