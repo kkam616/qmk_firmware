@@ -3,6 +3,9 @@
 
 #include QMK_KEYBOARD_H
 
+// Fn+\ 를 3초 누르면 부트로더 진입 (VIA에서 "Boot (hold 3s)"로 표시: jayking64_via.json의 customKeycodes)
+#define BOOT_HOLD QK_KB_0
+
 enum layers {
     _BASE,
     _FN,
@@ -49,7 +52,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [_FN] = LAYOUT_aek64(
         KC_GRV,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  KC_DEL,
-        _______, KC_HOME, KC_UP,   KC_END,  KC_PGUP, _______, _______, _______, _______, _______, KC_PSCR, _______, _______, QK_BOOT,
+        _______, KC_HOME, KC_UP,   KC_END,  KC_PGUP, _______, _______, _______, _______, _______, KC_PSCR, _______, _______, BOOT_HOLD,
         QK_LLCK, KC_LEFT, KC_DOWN, KC_RGHT, KC_PGDN, _______, _______, _______, _______, _______, _______, _______,          _______,
         _______,          UG_TOGG, UG_NEXT, UG_HUEU, _______, UG_VALU, UG_VALD, KC_MUTE, KC_VOLD, KC_VOLU, KC_MPLY,          _______,
         _______, _______, _______,                            _______,                            _______, _______, _______
@@ -63,17 +66,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *    밝기 221 = 흰색 전체 점등 시 약 320mA (2026-10-13 측정). 일반 조명 최대는 231(약 360mA).
  * 1: Fn 고정 알림(흰색 깜빡임) - Caps Lock이 꺼져 있을 때 사용
  * 2: Fn 고정 알림(꺼짐 깜빡임) - Caps Lock이 켜져 있어서 이미 흰색일 때 반대로 깜빡임
+ * 3: 부트로더 대기(빨간색) - Fn+ 를 누르고 있는 동안. 번호가 클수록 위에 그려지므로 가장 위
  */
 enum rgb_layer_index {
     RGBL_CAPS_LOCK,
     RGBL_BLINK_WHITE,
     RGBL_BLINK_OFF,
+    RGBL_BOOT_HOLD,
 };
 
 const rgblight_segment_t PROGMEM white_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 12, 0, 0, 221});
 const rgblight_segment_t PROGMEM off_layer[]   = RGBLIGHT_LAYER_SEGMENTS({0, 12, 0, 0, 0});
+const rgblight_segment_t PROGMEM red_layer[]   = RGBLIGHT_LAYER_SEGMENTS({0, 12, 0, 255, 221});
 
-const rgblight_segment_t *const PROGMEM rgb_layers[] = RGBLIGHT_LAYERS_LIST(white_layer, white_layer, off_layer);
+const rgblight_segment_t *const PROGMEM rgb_layers[] = RGBLIGHT_LAYERS_LIST(white_layer, white_layer, off_layer, red_layer);
 
 #define FN_LOCK_BLINK_MS 100 // 깜빡임 한 번의 켜짐(또는 꺼짐) 시간
 #define FN_LOCK_BLINK_TIMES 5
@@ -92,4 +98,28 @@ bool layer_lock_set_user(layer_state_t locked_layers) {
     uint8_t blink = host_keyboard_led_state().caps_lock ? RGBL_BLINK_OFF : RGBL_BLINK_WHITE;
     rgblight_blink_layer_repeat(blink, FN_LOCK_BLINK_MS, FN_LOCK_BLINK_TIMES);
     return true;
+}
+
+/* Fn+\ 길게 누르기 → 부트로더
+ * Fn+Delete(앞으로 지우기)를 누르다가 바로 아래 \ 가 스쳐서 부트로더로 들어가는 실수를 막는다.
+ */
+#define BOOT_HOLD_MS 3000
+
+static bool     boot_hold_active = false;
+static uint16_t boot_hold_timer;
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (keycode == BOOT_HOLD) {
+        boot_hold_active = record->event.pressed;
+        boot_hold_timer  = timer_read();
+        rgblight_set_layer_state(RGBL_BOOT_HOLD, boot_hold_active);
+        return false;
+    }
+    return true;
+}
+
+void housekeeping_task_user(void) {
+    if (boot_hold_active && timer_elapsed(boot_hold_timer) >= BOOT_HOLD_MS) {
+        reset_keyboard(); // QK_BOOT과 같은 동작: DFU 부트로더로 진입
+    }
 }

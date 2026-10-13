@@ -4,6 +4,9 @@
   "productId": "0x4A64",
   "matrix": { "rows": 5, "cols": 14 },
   "keycodes": ["qmk_lighting"],
+  "customKeycodes": [
+    {"name": "Boot (hold 3s)", "title": "3초 누르면 부트로더(DFU) 진입", "shortName": "Boot3s"}
+  ],
   "menus": ["qmk_rgblight"],
   "layouts": {
     "keymap": [
