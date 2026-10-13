@@ -27,8 +27,12 @@
     },
     "rgblight": {
         "led_count": 12,
-        "max_brightness": 180,
+        "max_brightness": 231,
         "sleep": true,
+        "layers": {
+            "enabled": true,
+            "override_rgb": true
+        },
         "animations": {
             "breathing": true,
             "rainbow_mood": true,

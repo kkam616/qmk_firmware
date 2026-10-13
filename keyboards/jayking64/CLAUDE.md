@@ -132,7 +132,7 @@ CC 5.1kΩ 개별 저항, SRV05 ESD(VBUS·D±), USB-C 실드는 페라이트(BLM2
 ---
 
 ## 5. QMK 작업 이력 (완료)
-1. ✅ `keyboard.json`: 핀, 매트릭스, 다이오드, USB VID/PID(`0x4A6B/0x4A64`. 처음엔 `0xFEED`였으나 VIA가 0xFEED를 거부해서 2026-10-01 변경), 부트로더, rgblight(12개, 최대 밝기 180. 처음 120), layouts
+1. ✅ `keyboard.json`: 핀, 매트릭스, 다이오드, USB VID/PID(`0x4A6B/0x4A64`. 처음엔 `0xFEED`였으나 VIA가 0xFEED를 거부해서 2026-10-01 변경), 부트로더, rgblight(12개, 최대 밝기 231. 120 → 180 → 231, 2026-10-13 측정으로 결정), layouts
 2. ✅ `LAYOUT_aek64` (처음에는 `LAYOUT_60_ansi_7u`로 만들었다가 6.5U로 고치면서 이름 변경). S70 = row4/col13 주의
 3. ✅ `keymaps/default`, `keymaps/via` (두 키맵 내용 동일, `via`는 `VIA_ENABLE = yes`)
 4. ✅ WS2812 PWM (A6 / TIM3_CH1 / DMA1 ch3), `halconf.h`, `mcuconf.h`, `config.h`
@@ -174,7 +174,8 @@ Fn 레이어 (Fn이 오른손이라 이동 키는 왼손에 모음):
  A ←     S ↓  D →    F PgDn
  P = Print Screen,  \ = 부트로더(QK_BOOT)
  M 음소거  , 볼륨-  . 볼륨+  / 재생·일시정지
- Z~N = 언더글로 LED (켜기/끄기, 모드, 색상, 채도, 밝기+, 밝기-)
+ Z X C B N = 언더글로 LED (켜기/끄기, 모드, 색상, 밝기+, 밝기-). 채도 키(V)는 2026-10-13 삭제
+ Caps Lock 켜짐 = 언더글로 12개 흰색(밝기 221)으로 덮어씀 (조명 꺼짐/모드와 무관, 끄면 원래대로)
 ```
 - 리셋 키(QK_RBT)는 사용자 요청으로 뺐다 (USB를 다시 꽂으면 됨).
 
@@ -195,6 +196,10 @@ qmk flash -kb jayking64 -km via        # 빌드 + 굽기. 먼저 SW1을 1초 정
 - ✅ **Fn+\ 부트로더 진입 반복 테스트 통과** → C9(470nF)가 소프트웨어 리셋을 막지 않음. 100nF 변경은 권장 사항으로만 유지
 - ℹ️ QK_BOOT로 들어간 뒤 `qmk flash` 하면 끝나고도 DFU에 머무름 (ROM DFU의 leave가 안 먹음). **USB를 다시 꽂으면** 새 펌웨어로 정상 부팅
 - ✅ LED 12개 모두 켜짐, 색 순서 정상, 전류 괜찮음 (120에서 확인 후 **max_brightness 180으로 올림**, 밝기·동작 이상 없음)
+- ✅ **LED 전류 정밀 측정 (2026-10-13, 벤치 서플라이 5V, 보드 전체, 흰색)**: 180 → 200 mA / 221 → 320 mA / 231 → 360 mA / 255 → 450 mA. **255에서 F1 폴리퓨즈(유지 0.5 A)가 트립**: MCU는 계속 동작하고 LED만 전부 꺼짐, 전원 제거 후 식으면 복구. 전류는 밝기에 비례하지 않으니 **계산 말고 측정**할 것. 결정: 일반 최대 231, Caps Lock 흰색 221
+- 참고: QMK rgblight는 저장 밝기값이 제한값을 넘어 255까지 올라갈 수 있고(출력만 제한값으로 잘림), 부팅 시 제한값으로 맞춘다. 최대에서 Fn+N 첫 번째는 변화가 없을 수 있음
+- 참고: VIA 키맵·매크로는 **빌드 날짜(연-월-일)가 다른 펌웨어를 구울 때만** 초기화된다 (`via_eeprom_is_valid()`는 QMK_BUILDDATE의 날짜만 비교). **같은 날 빌드한 펌웨어끼리는 이전 키맵이 남는다** → keymap.c 변경이 안 보이면 Bootmagic(Esc 누른 채 USB 연결)으로 초기화. **LED 설정(켜짐/색/밝기/모드)은 펌웨어를 바꿔도 유지**되고 Bootmagic으로만 초기화된다
+- 다음 리비전 제안: LED 최대 밝기를 쓰려면 유지 전류가 더 큰 폴리퓨즈 검토(USB 500 mA 한도와 같이), VCC 라인에 전류 측정용 점퍼 패드
   - 데이터시트 기준 흰색 최대 예상: LED 칩당 12mA 버전 약 340mA / 16mA 버전 약 440mA (F1 유지 0.5A 이하). 255는 16mA 버전이면 약 620mA라 비추천
 - ✅ VIA Key Tester로 60키 전부 정상 → **실보드 테스트 체크리스트 전 항목 완료**
 
@@ -206,12 +211,12 @@ qmk flash -kb jayking64 -km via        # 빌드 + 굽기. 먼저 SW1을 1초 정
 | 한/영, 한자 | 메모장에서 오른쪽 Command / 오른쪽 Control | Windows 한국어 입력기와 키보드 드라이버 설정 확인 |
 | **부트로더 진입** | 펌웨어를 구운 뒤 **Fn+\\** → 장치 관리자에 "STM32 BOOTLOADER". **5~10번 반복** | 안 되거나 가끔만 되면 **C9(470nF)가 소프트웨어 리셋을 방해**하는 것. 다음 리비전에서 100nF로 바꾸고 MCU 가까이 둔다 |
 | LED | Fn+Z로 켜기. 12개 다 켜지는지, 색 순서(빨강 고르면 빨강인지) | 색이 바뀌어 나오면 색 순서(RGB/GRB) 설정 |
-| LED 전류 | 흰색 최대 밝기에서 USB 전류 측정 | `rgblight.max_brightness`(지금 180)를 조정 |
+| LED 전류 | 흰색 최대 밝기에서 USB 전류 측정 | `rgblight.max_brightness`(지금 231)를 조정 |
 
 ### ⏭ 다음 작업 후보
 1. **멀티 레이아웃 VIA 옵션**: `keyboard.json`에 `LAYOUT_all`(66키) 추가, 대체 스위치 6개(S14, S41, S44, S55, S64, S69)에 기본 키 넣기, VIA JSON에 레이아웃 옵션 메뉴(분할 백스페이스 / ANSI·ISO·BAE 엔터 / 왼쪽 Shift / 오른쪽 Shift / 아랫줄 4종). 3번 표 참고.
    - 미확정: ISO·BAE 엔터는 S42 자리를 "쓰는 것 같다"고 함 (아트웍으로 재확인 권장). 왼쪽 Shift 1U+1.25U 조합은 미정.
-2. **Caps Lock 표시**: Caps Lock 상태 LED가 없어서, 켜지면 언더글로 색이 바뀌게 (rgblight layers). 실보드에서 LED 확인 후.
+2. ✅ **Caps Lock 표시** (2026-10-13 구현): rgblight layers + `override_rgb`, 흰색 밝기 221. **남은 확인: Caps Lock을 켠 채 5~10분 두고 전류·F1 온도 관찰**
 3. VIA로 며칠 써보고 마음에 드는 배치를 `keymap.c`에 반영.
 
 ### VS Code 세팅 (회사 PC는 완료, 집 PC는 다시 해야 함)
