@@ -9,6 +9,21 @@ Apple Extended Keyboard(AEK)의 키캡과 ALPS 스위치를 옮겨 심어 만드
 * 스위치: ALPS SKCM/SKCL, 5행 × 14열 매트릭스 (COL2ROW)
 * LED: WS2812B-2020 언더글로 12개
 * 하드웨어 자료: [`hardware/`](hardware/) (넷리스트, 회로도 PDF, BOM)
+* **펌웨어 버전: 1.4.1** ([변경 이력](#변경-이력))
+
+## 변경 이력
+
+버전 형식은 `주.부.수`입니다. **주**: PCB 리비전이나 배열·키맵 전면 개편처럼 큰 변화, **부**: 기능 추가나 키 배치 변경, **수**: 값 조정이나 버그 수정.
+각 버전 링크를 누르면 그 시점의 소스를 볼 수 있습니다.
+
+| 버전 | 날짜 | 변경 내용 |
+|---|---|---|
+| [**1.4.1**](https://github.com/kkam616/qmk_firmware/tree/jayking64-v1.4.1/keyboards/jayking64) | 2026-10-14 | Fn+`\` 3초가 되면 **빨간색으로 5번 깜빡인 뒤** 부트로더 진입 (깜빡이기 시작하면 취소 불가). USB 장치 버전을 1.4.1로 표기 |
+| [1.4.0](https://github.com/kkam616/qmk_firmware/tree/jayking64-v1.4.0/keyboards/jayking64) | 2026-10-13 | Fn+`\`를 **3초 눌러야** 부트로더 진입 (Fn+Delete 실수 방지). 누르는 동안 빨간색, 3초 전에 떼면 취소. VIA에 "Boot3s"로 표시 |
+| [1.3.0](https://github.com/kkam616/qmk_firmware/tree/jayking64-v1.3.0/keyboards/jayking64) | 2026-10-13 | **Fn 고정**: Fn+Caps Lock으로 고정, Caps 또는 Fn으로 해제. 흰색 5번 깜빡임 (Caps Lock이 켜져 있으면 꺼짐으로 깜빡임) |
+| [1.2.0](https://github.com/kkam616/qmk_firmware/tree/jayking64-v1.2.0/keyboards/jayking64) | 2026-10-13 | **Caps Lock 흰색 표시** (밝기 221, 조명 상태와 무관), 최대 밝기 180 → **231** (전류 측정 기반), 채도 키(Fn+V) 삭제 |
+| [1.1.0](https://github.com/kkam616/qmk_firmware/tree/jayking64-v1.1.0/keyboards/jayking64) | 2026-10-01 | **AEK64 배열**(6.5U), **Windows 키맵**(Ctrl/Win/Alt, 한/영, 한자, 오른쪽 Option = Fn), 왼손 이동 키(WASD, Home/End, PgUp/PgDn), PrtSc, 미디어 키, VIA용 VID 0x4A6B, **실보드 검증 완료**, 최대 밝기 180 |
+| [1.0.0](https://github.com/kkam616/qmk_firmware/tree/jayking64-v1.0.0/keyboards/jayking64) | 2026-10-01 | 첫 펌웨어: 60% 배열, VIA, 크리스털 없는 USB(HSI48 + CRS), WS2812 언더글로(PWM) |
 
 ## 기본 레이어
 

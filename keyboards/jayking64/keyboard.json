@@ -7,7 +7,7 @@
     "usb": {
         "vid": "0x4A6B",
         "pid": "0x4A64",
-        "device_version": "1.0.0"
+        "device_version": "1.4.1"
     },
     "features": {
         "bootmagic": true,
