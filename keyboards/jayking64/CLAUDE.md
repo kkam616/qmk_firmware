@@ -247,6 +247,11 @@ qmk flash -kb jayking64 -km via        # 빌드 + 굽기. 먼저 SW1을 1초 정
    - 미확정: ISO·BAE 엔터는 S42 자리를 "쓰는 것 같다"고 함 (아트웍으로 재확인 권장). 왼쪽 Shift 1U+1.25U 조합은 미정.
 2. ✅ **Caps Lock 표시** (2026-10-13 구현): rgblight layers + `override_rgb`, 흰색 밝기 221. **남은 확인: Caps Lock을 켠 채 5~10분 두고 전류·F1 온도 관찰**
 3. VIA로 며칠 써보고 마음에 드는 배치를 `keymap.c`에 반영.
+4. **Mac 자동 대응 (OS 감지)** (2026-10-19 추가, 아직 미착수, 부 버전 상승 대상):
+   - 배경: 맥북에서 테스트해 보니 왼쪽 아랫줄이 키캡과 반대로 동작한다. 키캡 Option(둘째 키)은 `KC_LGUI`라 Mac에서 Command, 키캡 Command(스페이스 옆)는 `KC_LALT`라 Mac에서 Option이 된다. 키맵이 Windows 기준이라 생기는 정상 동작이다. (Caps Lock은 수식키와 무관하게 동작해서 대문자 전환 테스트로는 구분되지 않는다)
+   - 방향: `OS_DETECTION_ENABLE = yes`, `detected_host_os()`가 `OS_MACOS`면 두 키를 맞바꿔 키캡 이름과 일치시킨다. Windows는 지금 그대로. 오른쪽 한/영(`KC_LNG1`)·한자(`KC_LNG2`)의 Mac 동작도 같이 확인한다.
+   - 주의: OS 감지는 USB 열거 패턴으로 추정해서 연결 직후 `OS_UNSURE`일 수 있고 허브/KVM을 거치면 오판할 수 있다. 감지 결과가 바뀔 때 반영하는 처리(`process_detected_host_os_kb`)가 필요하다.
+   - 확인 필요: 집 PC 세션에서 Mac 레이아웃을 따로 정하기로 한 내용이 있다고 사용자가 기억함. 이 저장소에는 기록이 없으니 착수 전에 집 PC의 미푸시 변경이나 대화 기록을 확인한다.
 
 ### VS Code 세팅 (회사 PC는 완료, 집 PC는 다시 해야 함)
 - 확장: **clangd** 사용, Microsoft C/C++의 IntelliSense는 끔 (`"C_Cpp.intelliSenseEngine": "disabled"`).
