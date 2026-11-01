@@ -46,6 +46,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      *     A ←      S ↓    D →      F PgDn
      * - P: Print Screen
      * - Caps Lock: Fn 고정(QK_LLCK). Fn+Caps로 고정, 고정 중에는 Caps나 Fn을 누르면 풀림
+     *   (Fn을 300ms 안에 두 번 눌러도 고정됨. process_record_user 참고)
      * - M / , / . / /: 음소거 / 볼륨 Down / 볼륨 Up / 재생·일시정지
      * - Z / X / C / B / N: 언더글로 LED (켜기/끄기, 모드, 색상, 밝기+, 밝기-)  ※ 채도 키는 뺌
      * - \: 3초 누르면 빨간색 5번 깜빡인 뒤 부트로더(DFU) 진입  ← 소프트웨어 리셋을 거치므로 NRST(C9) 회로 테스트도 이걸로 함
@@ -121,7 +122,36 @@ enum boot_hold_state {
 static uint8_t  boot_state = BOOT_IDLE;
 static uint16_t boot_timer;
 
+/* Fn 두 번 빠르게 누르기 → Fn 고정 (Fn+Caps Lock과 같은 효과)
+ * 첫 번째 Fn을 누른 뒤 FN_DOUBLE_TAP_MS 안에, 그 사이에 다른 키를 누르지 않고 Fn을 다시 누르면 고정한다.
+ * Fn+키 조합(Fn을 누른 채 다른 키)은 사이에 키가 끼므로 오작동하지 않는다.
+ * 고정된 뒤에는 기존처럼 Fn이나 Caps Lock을 누르면 풀린다 (QMK Layer Lock이 처리).
+ */
+#define FN_DOUBLE_TAP_MS 300
+
+static bool     fn_tap_valid = false; // 첫 번째 Fn을 눌렀고 아직 다른 키가 끼지 않음
+static uint16_t fn_tap_timer;
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (keycode == MO(_FN)) {
+        if (record->event.pressed) {
+            if (is_layer_locked(_FN)) {
+                fn_tap_valid = false; // 고정 해제용 누름: 그대로 Layer Lock이 처리
+            } else if (fn_tap_valid && timer_elapsed(fn_tap_timer) <= FN_DOUBLE_TAP_MS) {
+                fn_tap_valid = false;
+                layer_lock_on(_FN); // 레이어를 켜고 고정, 깜빡임은 layer_lock_set_user가 처리
+                return false;       // 이 누름은 여기서 끝냄 (Layer Lock이 다시 풀어버리지 않게)
+            } else {
+                fn_tap_valid = true;
+                fn_tap_timer = timer_read();
+            }
+        }
+        return true;
+    }
+    if (record->event.pressed) {
+        fn_tap_valid = false; // 사이에 다른 키가 눌렸으면 두 번 누르기가 아님
+    }
+
     if (keycode == BOOT_HOLD) {
         if (record->event.pressed && boot_state == BOOT_IDLE) {
             boot_state = BOOT_HOLDING;

@@ -18,6 +18,7 @@ Apple Extended Keyboard(AEK)의 키캡과 ALPS 스위치를 옮겨 심어 만드
 
 | 버전 | 날짜 | 변경 내용 |
 |---|---|---|
+| [**1.5.0**](https://github.com/kkam616/qmk_firmware/tree/jayking64-v1.5.0/keyboards/jayking64) | 2026-11-02 | **Fn을 빠르게 두 번** 눌러도 Fn 고정 (300ms 안에, 사이에 다른 키 없이). 기존 Fn+Caps Lock 고정은 그대로 |
 | [**1.4.1**](https://github.com/kkam616/qmk_firmware/tree/jayking64-v1.4.1/keyboards/jayking64) | 2026-10-14 | Fn+`\` 3초가 되면 **빨간색으로 5번 깜빡인 뒤** 부트로더 진입 (깜빡이기 시작하면 취소 불가). USB 장치 버전을 1.4.1로 표기 |
 | [1.4.0](https://github.com/kkam616/qmk_firmware/tree/jayking64-v1.4.0/keyboards/jayking64) | 2026-10-13 | Fn+`\`를 **3초 눌러야** 부트로더 진입 (Fn+Delete 실수 방지). 누르는 동안 빨간색, 3초 전에 떼면 취소. VIA에 "Boot3s"로 표시 |
 | [1.3.0](https://github.com/kkam616/qmk_firmware/tree/jayking64-v1.3.0/keyboards/jayking64) | 2026-10-13 | **Fn 고정**: Fn+Caps Lock으로 고정, Caps 또는 Fn으로 해제. 흰색 5번 깜빡임 (Caps Lock이 켜져 있으면 꺼짐으로 깜빡임) |
@@ -62,7 +63,7 @@ Apple Extended Keyboard(AEK)의 키캡과 ALPS 스위치를 옮겨 심어 만드
 | 이동 | `Q` / `E` | Home / End |
 | | `R` / `F` | Page Up / Page Down |
 | 캡처 | `P` | Print Screen |
-| **Fn 고정** | `Caps Lock` | Fn 레이어 고정 켜기 / 끄기 (아래 설명) |
+| **Fn 고정** | `Caps Lock` 또는 **Fn 두 번** | Fn 레이어 고정 켜기 / 끄기 (아래 설명) |
 | 미디어 | `M` | 음소거 |
 | | `,` / `.` | 볼륨 − / 볼륨 + |
 | | `/` | 재생 / 일시정지 |
@@ -76,7 +77,7 @@ Apple Extended Keyboard(AEK)의 키캡과 ALPS 스위치를 옮겨 심어 만드
 
 ## Fn 고정 (Fn Lock)
 
-**Fn + Caps Lock**을 누르면 Fn을 누르고 있지 않아도 Fn 레이어가 유지됩니다 (WASD 방향키 등을 계속 쓸 때).
+**Fn + Caps Lock**을 누르거나, **Fn을 빠르게 두 번**(300ms 안에, 사이에 다른 키 없이) 누르면 Fn을 누르고 있지 않아도 Fn 레이어가 유지됩니다 (WASD 방향키 등을 계속 쓸 때).
 고정 중에 **Caps Lock** 또는 **Fn**을 누르면 풀립니다. 고정될 때와 풀릴 때 언더글로가 **흰색으로 5번 깜빡**입니다.
 Caps Lock이 켜져 있어 이미 흰색일 때는 반대로 **꺼짐으로 깜빡**입니다.
 
